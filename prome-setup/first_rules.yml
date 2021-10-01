@@ -1,0 +1,34 @@
+groups:
+- name: Host Out Of Disk/RAM/CPU 
+  rules: 
+  
+  - alert: HostOutOfDiskSpace
+    expr: (node_filesystem_avail_bytes * 100)/node_filesystem_size_bytes < 10
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: 'Host out of disk space (instance {{ $labels.instance }})'
+      description: 'Disk is almost full (< 10% left)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}'
+
+  - alert: HostOutOfMemory
+    expr: job:request_latency_seconds:mean5m{job="myjob"} > 0.5
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      description: 'Metrics RAM for {{ $labels.job }} running on {{ $labels.instance }} has been over 90% for more than 5 minutes.'
+      summary: 'High RAM capability over 90% (instance {{ $labels.instance }})'
+
+  - alert: HostHighCpuLoad
+    expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: 'Host high CPU load (instance {{ $labels.instance }})'
+      description: 'CPU load is > 80%\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}'
+
+  
+  
+ 

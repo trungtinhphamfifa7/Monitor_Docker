@@ -1,0 +1,7 @@
+FROM prom/alertmanager:v0.19.0
+ADD ./alert-setup/ /etc/alertmanager/
+CMD rm -rf /etc/alertmanager/default.tmpl
+ADD ./alert-setup/provisioning/ /etc/alertmanager-templates
+CMD rm -rf /etc/alertmanager-templates/config.yml
+
+EXPOSE 9093

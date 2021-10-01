@@ -1,0 +1,4 @@
+FROM prom/node-exporter
+# ADD ./prome-setup/ /etc/prometheus/
+# #ADD ./prome-setup/first_rules.yml /etc/prometheus/
+# EXPOSE 9100

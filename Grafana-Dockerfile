@@ -1,0 +1,4 @@
+FROM grafana/grafana
+ADD ./gfn-setup/provisioning/ /etc/grafana/provisioning/
+ADD ./gfn-setup/dashboards/ /var/lib/grafana/dashboards/
+EXPOSE 3000

@@ -1,0 +1,70 @@
+version: "3.9"
+networks:
+  monitor:
+    ipam:
+      config:
+        - subnet: 10.29.0.0/16
+
+services:
+  prome:
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prome-setup/:/etc/prometheus/
+      - ./data/prome/:/prometheus/
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus/
+    image: prom/prometheus
+    networks:
+        monitor:
+          ipv4_address: 10.29.0.1
+
+
+  grafana:
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./gfn-setup/provisioning/:/etc/grafana/provisioning/
+      - ./gfn-setup/dashboards/:/var/lib/grafana/dashboards/
+      - ./data/grafana/:/var/lib/grafana
+    image: grafana/grafana
+    environment:
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+    networks:
+        monitor:
+          ipv4_address: 10.29.0.2
+
+  alert:
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alert-setup/:/etc/alertmanager/
+      - ./alert-setup/provisioning/:/etc/alertmanager-templates
+      - ./data/prome/:/alertmanager
+    image: prom/alertmanager:v0.19.0
+    command:
+      - --config.file=/etc/alertmanager/config.yml
+      - --storage.path=/alertmanager
+    networks:
+        monitor:
+          ipv4_address: 10.29.0.3
+
+  node:
+    ports:
+      - "9100:9100"
+    # volumes:
+    #   - ./alert-setup/ /etc/alertmanager/
+    #   - ./alert-setup/provisioning/ /etc/alertmanager-templates
+    image: prom/node-exporter
+    command:
+      - --path.sysfs=/host/sys
+      - --path.rootfs=/host/root
+      - --no-collector.wifi
+      - --no-collector.hwmon
+      - --collector.filesystem.ignored-mount-points=^/(dev|proc|sys|var/lib/docker/.+|var/lib/kubelet/pods/.+)($|/)
+      - --collector.netclass.ignored-devices=^(veth.*)$
+    networks:
+        monitor:
+          ipv4_address: 10.29.0.4
+
